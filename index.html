@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Cuota Comercial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General styles for the body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light background for a clean look */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* Styles for the main calculator card */
+        .calculator-card {
+            background-color: #ffffff; /* White background for the card */
+            border-radius: 1.5rem; /* More pronounced rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05); /* Deeper, softer shadow */
+            padding: 2.5rem 3rem; /* Generous padding */
+            width: 100%;
+            max-width: 700px; /* Slightly wider for better layout */
+            border: 1px solid #e0e0e0; /* Subtle border */
+        }
+        /* Header styling */
+        .calculator-card h1 {
+            color: #212529; /* Darker text for headings */
+            font-weight: 700; /* Bolder heading */
+            margin-bottom: 2.5rem; /* More space below the title */
+        }
+        /* Input group styling */
+        .input-group label {
+            font-weight: 600; /* Semi-bold labels */
+            color: #495057; /* Slightly softer dark text */
+            margin-bottom: 0.6rem; /* Increased spacing */
+            display: block;
+            font-size: 0.95rem; /* Slightly larger font for labels */
+        }
+        /* Input field styling */
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 0.85rem 1.2rem; /* More padding for a taller, more comfortable input */
+            border: 1px solid #ced4da; /* Neutral border color */
+            border-radius: 0.75rem; /* Consistent rounded corners */
+            font-size: 1.05rem; /* Slightly larger font for inputs */
+            color: #343a40; /* Darker input text */
+            background-color: #fdfdfe; /* Almost white background */
+            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        /* Input focus styling */
+        .input-group input[type="number"]:focus,
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff; /* Primary blue for focus */
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25); /* Softer, wider focus shadow */
+        }
+        /* Readonly input styling */
+        .input-group input[readonly] {
+            background-color: #e9ecef; /* Lighter grey for readonly */
+            cursor: default; /* Default cursor for readonly */
+        }
+        /* Radio button group styling */
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem; /* More space between radio options */
+            cursor: pointer;
+            font-weight: 500; /* Medium weight for radio labels */
+            color: #495057;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 0.6rem; /* Slightly more space */
+            /* Custom radio button appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.15rem;
+            height: 1.15rem;
+            border: 2px solid #ced4da;
+            border-radius: 50%;
+            background-color: #fff;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            top: 1px; /* Adjust vertical alignment */
+        }
+        .radio-group input[type="radio"]:checked {
+            border-color: #007bff;
+            background-color: #007bff;
+        }
+        .radio-group input[type="radio"]:checked::before {
+            content: '';
+            display: block;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* Results section styling */
+        .results h2 {
+            color: #212529;
+            font-weight: 700;
+            margin-bottom: 1.5rem; /* More space above results */
+        }
+        /* Individual result box styling */
+        .result-box {
+            background-color: #e9f5ff; /* Lighter blue for results */
+            border-radius: 0.85rem; /* Slightly more rounded */
+            padding: 1.2rem 1.8rem; /* More padding */
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #cce5ff; /* Subtle blue border */
+        }
+        .result-box span:first-child {
+            font-weight: 600;
+            color: #0056b3; /* Deeper blue for labels */
+            font-size: 1.05rem;
+        }
+        .result-box span:last-child {
+            font-weight: 700;
+            color: #004085; /* Even deeper blue for values */
+            font-size: 1.15rem; /* Larger font for values */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="calculator-card">
+        <h1 class="text-3xl font-bold text-center text-slate-800 mb-8">Calculadora de Cuota Comercial</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="input-group">
+                <label for="salarioBaseMensual">Salario Base Mensual (COP)</label>
+                <input type="text" id="salarioBaseMensual" value="2000000" min="0">
+            </div>
+            <div class="input-group">
+                <label for="porcentajeComision">Porcentaje de Comisión (sobre la base)</label>
+                <input type="number" id="porcentajeComision" value="5" min="0" max="100">
+            </div>
+            <div class="input-group col-span-full">
+                <label class="block font-semibold text-slate-700 mb-2">Base de Comisión</label>
+                <div class="flex space-x-6">
+                    <label class="radio-group">
+                        <input type="radio" name="baseComision" value="ventaTotal" id="baseVentaTotal">
+                        Sobre Venta Total
+                    </label>
+                    <label class="radio-group">
+                        <input type="radio" name="baseComision" value="margenBruto" id="baseMargenBruto" checked>
+                        Sobre Margen Bruto
+                    </label>
+                </div>
+            </div>
+            <div class="input-group" id="margenBrutoContainer">
+                <label for="porcentajeMargenBruto">Porcentaje de Margen Bruto de la Empresa (%)</label>
+                <input type="number" id="porcentajeMargenBruto" value="30" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="ticketPromedioUSD">Ticket Promedio por Caso (USD)</label>
+                <input type="text" id="ticketPromedioUSD" value="7000" min="0">
+            </div>
+            <div class="input-group" id="trmContainer">
+                <label for="trm">TRM (COP / 1 USD)</label>
+                <input type="text" id="trm" value="4000" min="1">
+            </div>
+        </div>
+
+        <div class="input-group mb-8">
+            <label class="block font-semibold text-slate-700 mb-2">Modo de Cálculo</label>
+            <div class="flex space-x-6">
+                <label class="radio-group">
+                    <input type="radio" name="calculateMode" value="calculateQuota" id="calculateModeQuota" checked>
+                    Calcular Cuota/Casos
+                </label>
+                <label class="radio-group">
+                    <input type="radio" name="calculateMode" value="calculateRatio" id="calculateModeRatio">
+                    Calcular Relación Cuota a OTE
+                </label>
+            </div>
+        </div>
+
+        <div class="input-group mb-8" id="relacionCuotaOTEContainer">
+            <label for="relacionCuotaOTE">Relación Cuota a OTE (X veces)</label>
+            <input type="number" id="relacionCuotaOTE" value="8" min="1" step="0.1">
+        </div>
+
+        <div class="input-group mb-8" id="cuotaMensualInputContainer" style="display: none;">
+            <label for="cuotaMensualInput">Cuota Mensual (COP)</label>
+            <input type="text" id="cuotaMensualInput" value="26666667" min="0">
+        </div>
+
+        <div class="results space-y-4">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Resultados Calculados</h2>
+            <div class="result-box">
+                <span>OTE Anual:</span>
+                <span id="oteAnual"></span>
+            </div>
+            <div class="result-box">
+                <span>Cuota Anual:</span>
+                <span id="cuotaAnual"></span>
+            </div>
+            <div class="result-box">
+                <span>Cuota Mensual:</span>
+                <span id="cuotaMensual"></span>
+            </div>
+            <div class="result-box">
+                <span>Casos Necesarios por Mes:</span>
+                <span id="casosPorMes"></span>
+            </div>
+            <div class="result-box" id="relacionCuotaOTEResultContainer" style="display: none;">
+                <span>Relación Cuota a OTE:</span>
+                <span id="relacionCuotaOTEResult"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM element references
+        const salarioBaseMensualInput = document.getElementById('salarioBaseMensual');
+        const porcentajeComisionInput = document.getElementById('porcentajeComision');
+        const baseComisionRadios = document.querySelectorAll('input[name="baseComision"]');
+        const margenBrutoContainer = document.getElementById('margenBrutoContainer');
+        const porcentajeMargenBrutoInput = document.getElementById('porcentajeMargenBruto');
+        const ticketPromedioUSDInput = document.getElementById('ticketPromedioUSD');
+        const trmInput = document.getElementById('trm');
+        const calculateModeRadios = document.querySelectorAll('input[name="calculateMode"]');
+        const calculateModeQuotaRadio = document.getElementById('calculateModeQuota');
+        const calculateModeRatioRadio = document.getElementById('calculateModeRatio');
+        const relacionCuotaOTEContainer = document.getElementById('relacionCuotaOTEContainer');
+        const relacionCuotaOTEInput = document.getElementById('relacionCuotaOTE');
+        const cuotaMensualInputContainer = document.getElementById('cuotaMensualInputContainer');
+        const cuotaMensualInput = document.getElementById('cuotaMensualInput');
+
+        const oteAnualOutput = document.getElementById('oteAnual');
+        const cuotaAnualOutput = document.getElementById('cuotaAnual');
+        const cuotaMensualOutput = document.getElementById('cuotaMensual');
+        const casosPorMesOutput = document.getElementById('casosPorMes');
+        const relacionCuotaOTEResultContainer = document.getElementById('relacionCuotaOTEResultContainer');
+        const relacionCuotaOTEResult = document.getElementById('relacionCuotaOTEResult');
+
+        // Function to format numbers to Colombian Pesos (COP) currency
+        const formatCOP = (value) => {
+            if (isNaN(value) || value === null) return 'N/A';
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        };
+
+        // Function to format numbers for input display (with thousands separator, no currency symbol)
+        const formatNumberForInput = (value) => {
+            if (isNaN(value) || value === null) return '';
+            return new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        };
+
+        // Function to parse formatted input string back to a number
+        const parseFormattedInput = (value) => {
+            // Remove all non-digit characters except for a potential comma for decimals (though not used in COP for thousands)
+            // For COP, thousands separator is '.' and decimal is ','
+            // We need to remove '.' for thousands and replace ',' with '.' for decimal parsing if it were a decimal input
+            // Since these are integer inputs, we just remove thousands separators ('.')
+            if (typeof value !== 'string') { // Ensure it's a string before replacing
+                value = String(value);
+            }
+            return parseFloat(value.replace(/\./g, '')); // Replace dots used as thousands separators
+        };
+
+        // Main quota calculation function
+        const calculateQuota = () => {
+            try {
+                // Parse input values to floats
+                const salarioBaseMensual = parseFormattedInput(salarioBaseMensualInput.value);
+                const porcentajeComision = parseFloat(porcentajeComisionInput.value);
+                const ticketPromedioUSD = parseFormattedInput(ticketPromedioUSDInput.value);
+                const trm = parseFormattedInput(trmInput.value);
+
+                // Basic validations to ensure inputs are valid
+                if (isNaN(salarioBaseMensual) || salarioBaseMensual < 0) {
+                    throw new Error("Salario Base Mensual debe ser un número positivo.");
+                }
+                if (isNaN(porcentajeComision) || porcentajeComision < 0 || porcentajeComision > 100) {
+                    throw new Error("Porcentaje de Comisión debe estar entre 0 y 100.");
+                }
+                if (isNaN(ticketPromedioUSD) || ticketPromedioUSD <= 0) {
+                    throw new Error("Ticket Promedio (USD) debe ser un número positivo.");
+                }
+                if (isNaN(trm) || trm <= 0) {
+                    throw new Error("TRM debe ser un número positivo.");
+                }
+
+                const salarioBaseAnual = salarioBaseMensual * 12;
+                const ticketPromedioCOP = ticketPromedioUSD * trm;
+
+                let effectiveCommissionOnTotalRevenue; // This is the actual commission percentage on total sale revenue
+
+                // Determine the commission base (Total Sale or Gross Margin)
+                const selectedCommissionBase = document.querySelector('input[name="baseComision"]:checked').value;
+
+                if (selectedCommissionBase === 'ventaTotal') {
+                    // If based on total sale, effective commission is the nominal percentage
+                    effectiveCommissionOnTotalRevenue = porcentajeComision;
+                } else { // 'margenBruto'
+                    // If based on gross margin, we need the company's gross margin percentage
+                    const porcentajeMargenBruto = parseFloat(porcentajeMargenBrutoInput.value);
+                    if (isNaN(porcentajeMargenBruto) || porcentajeMargenBruto < 0 || porcentajeMargenBruto > 100) {
+                        throw new Error("El porcentaje de margen bruto debe estar entre 0 y 100.");
+                    }
+                    // Effective commission is the nominal commission percentage multiplied by the gross margin percentage
+                    effectiveCommissionOnTotalRevenue = (porcentajeComision / 100) * porcentajeMargenBruto;
+                }
+
+                // Convert effective commission to decimal format for the formula (e.g., 2.5% -> 0.025)
+                const effectiveCommissionDecimal = effectiveCommissionOnTotalRevenue / 100;
+
+                let oteAnual, cuotaAnual, cuotaMensual, relacionCuotaOTE, casosPorMes;
+
+                const calculateMode = document.querySelector('input[name="calculateMode"]:checked').value;
+
+                if (calculateMode === 'calculateQuota') {
+                    // MODE 1: Calculate Quota/Cases (Quota to OTE Ratio is input)
+                    const relacionCuotaOTEInputVal = parseFloat(relacionCuotaOTEInput.value);
+                    if (isNaN(relacionCuotaOTEInputVal) || relacionCuotaOTEInputVal <= 0) {
+                        throw new Error("Relación Cuota a OTE debe ser un número positivo.");
+                    }
+                    relacionCuotaOTE = relacionCuotaOTEInputVal;
+
+                    // Validate to prevent division by zero or negative results in OTE calculation
+                    // This happens if the effective commission is so high that the salesperson "earns" more than they generate
+                    if (1 - (effectiveCommissionDecimal * relacionCuotaOTE) <= 0) {
+                        throw new Error("Ratio o comisión efectiva demasiado altos. No es posible calcular un OTE positivo.");
+                    }
+
+                    // Calculate Annual OTE (On-Target Earnings)
+                    // OTE = Annual Base Salary / (1 - (Effective Commission on Total Revenue in decimal * Quota to OTE Ratio))
+                    oteAnual = salarioBaseAnual / (1 - (effectiveCommissionDecimal * relacionCuotaOTE));
+
+                    // Calculate Annual Quota
+                    // Annual Quota = Annual OTE * Quota to OTE Ratio
+                    cuotaAnual = oteAnual * relacionCuotaOTE;
+
+                    // Calculate Monthly Quota
+                    cuotaMensual = cuotaAnual / 12;
+
+                    // Calculate Cases Needed per Month
+                    casosPorMes = cuotaMensual / ticketPromedioCOP;
+
+                    // Display results
+                    oteAnualOutput.textContent = formatCOP(oteAnual);
+                    cuotaAnualOutput.textContent = formatCOP(cuotaAnual);
+                    cuotaMensualOutput.textContent = formatCOP(cuotaMensual);
+                    casosPorMesOutput.textContent = casosPorMes.toFixed(2);
+                    relacionCuotaOTEResultContainer.style.display = 'none'; // Hide this result
+                } else {
+                    // MODE 2: Calculate Quota to OTE Ratio (Monthly Quota is input)
+                    const cuotaMensualInputVal = parseFormattedInput(cuotaMensualInput.value);
+                    if (isNaN(cuotaMensualInputVal) || cuotaMensualInputVal < 0) {
+                        throw new Error("Cuota Mensual debe ser un número positivo o cero.");
+                    }
+
+                    cuotaMensual = cuotaMensualInputVal;
+                    cuotaAnual = cuotaMensual * 12;
+
+                    // Calculate Annual OTE based on Annual Quota and effective commission percentage
+                    // OTE = Annual Base Salary + (Effective Commission on Total Revenue * Annual Quota)
+                    oteAnual = salarioBaseAnual + (effectiveCommissionDecimal * cuotaAnual);
+
+                    // Calculate Quota to OTE Ratio
+                    if (oteAnual <= 0) {
+                        throw new Error("OTE Anual es cero o negativo, no se puede calcular la relación Cuota a OTE.");
+                    }
+                    relacionCuotaOTE = cuotaAnual / oteAnual;
+
+                    // Calculate Cases Needed per Month
+                    casosPorMes = cuotaMensual / ticketPromedioCOP;
+
+                    // Display results
+                    oteAnualOutput.textContent = formatCOP(oteAnual);
+                    cuotaAnualOutput.textContent = formatCOP(cuotaAnual);
+                    cuotaMensualOutput.textContent = formatCOP(cuotaMensual);
+                    casosPorMesOutput.textContent = casosPorMes.toFixed(2);
+                    relacionCuotaOTEResultContainer.style.display = 'flex'; // Show this result
+                    relacionCuotaOTEResult.textContent = `${relacionCuotaOTE.toFixed(2)}x`;
+                }
+
+            } catch (error) {
+                // Error handling: Display a message in the UI if there's an input problem
+                oteAnualOutput.textContent = "Error: " + error.message;
+                cuotaAnualOutput.textContent = "";
+                cuotaMensualOutput.textContent = "";
+                casosPorMesOutput.textContent = "";
+                relacionCuotaOTEResult.textContent = "";
+            }
+        };
+
+        // Function to control visibility of gross margin fields and calculation mode
+        const toggleVisibility = () => {
+            // Control visibility of Gross Margin field
+            const selectedCommissionBase = document.querySelector('input[name="baseComision"]:checked').value;
+            if (selectedCommissionBase === 'margenBruto') {
+                margenBrutoContainer.style.display = 'block';
+            } else {
+                margenBrutoContainer.style.display = 'none';
+            }
+
+            // Control visibility of fields based on calculation mode
+            const calculateMode = document.querySelector('input[name="calculateMode"]:checked').value;
+            if (calculateMode === 'calculateQuota') {
+                relacionCuotaOTEContainer.style.display = 'block';
+                cuotaMensualInputContainer.style.display = 'none';
+                relacionCuotaOTEResultContainer.style.display = 'none'; // Ensure ratio result is hidden in this mode
+            } else { // 'calculateRatio'
+                relacionCuotaOTEContainer.style.display = 'none';
+                cuotaMensualInputContainer.style.display = 'block';
+                relacionCuotaOTEResultContainer.style.display = 'flex'; // Show ratio result in this mode
+            }
+            calculateQuota(); // Recalculate results every time visibility changes
+        };
+
+        // --- Input Formatting Logic ---
+        const setupInputFormatting = (inputElement) => {
+            // Format on blur (when input loses focus)
+            inputElement.addEventListener('blur', () => {
+                const value = parseFormattedInput(inputElement.value); // Parse first to get raw number
+                if (!isNaN(value)) {
+                    inputElement.value = formatNumberForInput(value); // Then format for display
+                }
+            });
+
+            // Revert to raw number on focus (when input gains focus)
+            inputElement.addEventListener('focus', () => {
+                const value = parseFormattedInput(inputElement.value); // Parse to get raw number
+                if (!isNaN(value)) {
+                    inputElement.value = value; // Display raw number
+                }
+            });
+        };
+
+        // Assign event listeners to all input fields and radio buttons
+        // Only attach input event listener to calculateQuota, as formatting is handled separately
+        salarioBaseMensualInput.addEventListener('input', calculateQuota);
+        porcentajeComisionInput.addEventListener('input', calculateQuota);
+        porcentajeMargenBrutoInput.addEventListener('input', calculateQuota);
+        ticketPromedioUSDInput.addEventListener('input', calculateQuota);
+        trmInput.addEventListener('input', calculateQuota);
+        relacionCuotaOTEInput.addEventListener('input', calculateQuota);
+        cuotaMensualInput.addEventListener('input', calculateQuota);
+
+        baseComisionRadios.forEach(radio => {
+            radio.addEventListener('change', toggleVisibility);
+        });
+        calculateModeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleVisibility);
+        });
+
+        // Apply formatting to relevant number inputs
+        setupInputFormatting(salarioBaseMensualInput);
+        setupInputFormatting(ticketPromedioUSDInput);
+        setupInputFormatting(trmInput);
+        setupInputFormatting(cuotaMensualInput);
+
+
+        // Execute initial functions on page load
+        window.onload = () => {
+            toggleVisibility(); // Set initial visibility and perform initial calculation
+
+            // Apply initial formatting to inputs that have default values
+            // Ensure values are parsed before formatting to handle initial non-formatted values
+            salarioBaseMensualInput.value = formatNumberForInput(parseFormattedInput(salarioBaseMensualInput.value));
+            ticketPromedioUSDInput.value = formatNumberForInput(parseFormattedInput(ticketPromedioUSDInput.value));
+            trmInput.value = formatNumberForInput(parseFormattedInput(trmInput.value));
+            cuotaMensualInput.value = formatNumberForInput(parseFormattedInput(cuotaMensualInput.value));
+        };
+    </script>
+</body>
+</html>
