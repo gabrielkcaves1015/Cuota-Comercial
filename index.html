@@ -185,6 +185,10 @@
                     <input type="radio" name="calculateMode" value="calculateRatio" id="calculateModeRatio">
                     Calcular Relación Cuota a OTE
                 </label>
+                <label class="radio-group">
+                    <input type="radio" name="calculateMode" value="calculateByCases" id="calculateModeByCases">
+                    Calcular por Número de Casos por Mes
+                </label>
             </div>
         </div>
 
@@ -196,6 +200,11 @@
         <div class="input-group mb-8" id="cuotaMensualInputContainer" style="display: none;">
             <label for="cuotaMensualInput">Cuota Mensual (COP)</label>
             <input type="text" id="cuotaMensualInput" value="26666667" min="0">
+        </div>
+
+        <div class="input-group mb-8" id="casosPorMesInputContainer" style="display: none;">
+            <label for="casosPorMesInput">Número de Casos por Mes</label>
+            <input type="number" id="casosPorMesInput" value="4" min="0" step="0.01">
         </div>
 
         <div class="results space-y-4">
@@ -239,6 +248,8 @@
         const relacionCuotaOTEInput = document.getElementById('relacionCuotaOTE');
         const cuotaMensualInputContainer = document.getElementById('cuotaMensualInputContainer');
         const cuotaMensualInput = document.getElementById('cuotaMensualInput');
+        const casosPorMesInputContainer = document.getElementById('casosPorMesInputContainer');
+        const casosPorMesInput = document.getElementById('casosPorMesInput');
 
         const oteAnualOutput = document.getElementById('oteAnual');
         const cuotaAnualOutput = document.getElementById('cuotaAnual');
@@ -364,7 +375,7 @@
                     cuotaMensualOutput.textContent = formatCOP(cuotaMensual);
                     casosPorMesOutput.textContent = casosPorMes.toFixed(2);
                     relacionCuotaOTEResultContainer.style.display = 'none'; // Hide this result
-                } else {
+                } else if (calculateMode === 'calculateRatio') {
                     // MODE 2: Calculate Quota to OTE Ratio (Monthly Quota is input)
                     const cuotaMensualInputVal = parseFormattedInput(cuotaMensualInput.value);
                     if (isNaN(cuotaMensualInputVal) || cuotaMensualInputVal < 0) {
@@ -394,8 +405,28 @@
                     casosPorMesOutput.textContent = casosPorMes.toFixed(2);
                     relacionCuotaOTEResultContainer.style.display = 'flex'; // Show this result
                     relacionCuotaOTEResult.textContent = `${relacionCuotaOTE.toFixed(2)}x`;
+                } else if (calculateMode === 'calculateByCases') {
+                    // MODE 3: Calcular por Número de Casos por Mes
+                    const casosPorMesVal = parseFloat(casosPorMesInput.value);
+                    if (isNaN(casosPorMesVal) || casosPorMesVal <= 0) {
+                        throw new Error("Número de Casos por Mes debe ser un número positivo.");
+                    }
+                    casosPorMes = casosPorMesVal;
+                    cuotaMensual = casosPorMes * ticketPromedioCOP;
+                    cuotaAnual = cuotaMensual * 12;
+                    oteAnual = salarioBaseAnual + (effectiveCommissionDecimal * cuotaAnual);
+                    if (oteAnual <= 0) {
+                        throw new Error("OTE Anual es cero o negativo, no se puede calcular la relación Cuota a OTE.");
+                    }
+                    relacionCuotaOTE = cuotaAnual / oteAnual;
+                    // Mostrar resultados
+                    oteAnualOutput.textContent = formatCOP(oteAnual);
+                    cuotaAnualOutput.textContent = formatCOP(cuotaAnual);
+                    cuotaMensualOutput.textContent = formatCOP(cuotaMensual);
+                    casosPorMesOutput.textContent = casosPorMes.toFixed(2);
+                    relacionCuotaOTEResultContainer.style.display = 'flex';
+                    relacionCuotaOTEResult.textContent = `${relacionCuotaOTE.toFixed(2)}x`;
                 }
-
             } catch (error) {
                 // Error handling: Display a message in the UI if there's an input problem
                 oteAnualOutput.textContent = "Error: " + error.message;
@@ -421,13 +452,20 @@
             if (calculateMode === 'calculateQuota') {
                 relacionCuotaOTEContainer.style.display = 'block';
                 cuotaMensualInputContainer.style.display = 'none';
-                relacionCuotaOTEResultContainer.style.display = 'none'; // Ensure ratio result is hidden in this mode
-            } else { // 'calculateRatio'
+                casosPorMesInputContainer.style.display = 'none';
+                relacionCuotaOTEResultContainer.style.display = 'none';
+            } else if (calculateMode === 'calculateRatio') {
                 relacionCuotaOTEContainer.style.display = 'none';
                 cuotaMensualInputContainer.style.display = 'block';
-                relacionCuotaOTEResultContainer.style.display = 'flex'; // Show ratio result in this mode
+                casosPorMesInputContainer.style.display = 'none';
+                relacionCuotaOTEResultContainer.style.display = 'flex';
+            } else if (calculateMode === 'calculateByCases') {
+                relacionCuotaOTEContainer.style.display = 'none';
+                cuotaMensualInputContainer.style.display = 'none';
+                casosPorMesInputContainer.style.display = 'block';
+                relacionCuotaOTEResultContainer.style.display = 'none';
             }
-            calculateQuota(); // Recalculate results every time visibility changes
+            calculateQuota();
         };
 
         // --- Input Formatting Logic ---
@@ -458,6 +496,7 @@
         trmInput.addEventListener('input', calculateQuota);
         relacionCuotaOTEInput.addEventListener('input', calculateQuota);
         cuotaMensualInput.addEventListener('input', calculateQuota);
+        casosPorMesInput.addEventListener('input', calculateQuota);
 
         baseComisionRadios.forEach(radio => {
             radio.addEventListener('change', toggleVisibility);
@@ -471,6 +510,7 @@
         setupInputFormatting(ticketPromedioUSDInput);
         setupInputFormatting(trmInput);
         setupInputFormatting(cuotaMensualInput);
+        setupInputFormatting(casosPorMesInput);
 
 
         // Execute initial functions on page load
@@ -483,6 +523,7 @@
             ticketPromedioUSDInput.value = formatNumberForInput(parseFormattedInput(ticketPromedioUSDInput.value));
             trmInput.value = formatNumberForInput(parseFormattedInput(trmInput.value));
             cuotaMensualInput.value = formatNumberForInput(parseFormattedInput(cuotaMensualInput.value));
+            casosPorMesInput.value = formatNumberForInput(parseFormattedInput(casosPorMesInput.value));
         };
     </script>
 </body>
